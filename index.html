@@ -3,85 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Math for Grade 1</title>
+  <title>Choose Your Lesson</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #f9f9f9;
+      font-family: 'Comic Sans MS', sans-serif;
       margin: 0;
       padding: 0;
+      background: url('https://images.pexels.com/photos/956999/milky-way-starry-sky-night-sky-star-956999.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5em;
+      margin: 20px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     }
     .container {
-      padding: 20px; 
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
     }
-    .problem {
-      font-size: 20px;
-      margin: 10px 0;
-    }
-    .input-box {
-      margin: 5px;
-      font-size: 18px;
-      padding: 5px;
-    }
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
+    .lesson-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      width: 250px;
+      text-align: center;
+      padding: 50px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      color: #333;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #218838;
+    .lesson-card:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    .lesson-card h3 {
+      margin: 0;
+      font-size: 1.5em;
+    }
+    .lesson-card p {
+      font-size: 1em;
+      margin: 10px 0;
+    }
+    .lesson-card a {
+      text-decoration: none;
+      color: #fff;
+      background-color: #3498db;
+      padding: 10px 15px;
+      border-radius: 5px;
+      display: inline-block;
+    }
+    .lesson-card a:hover {
+      background-color: #2980b9;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Grade 1 Interactive Math</h1>
-    <p>Solve the problems below and check your answers!</p>
-    <div id="math-section">
-      <!-- Problems will be inserted here by JavaScript -->
-    </div>
-    <button onclick="checkAnswers()">Check Answers</button>
-    <p id="result"></p>
+  <h1>Choose Your Lesson</h1>
+  <div class="container" id="lesson-container">
+    <!-- Dynamic content will be added here -->
   </div>
-
+  
   <script>
-    const problems = [
-      { question: "2 + 3 = ", answer: 5 },
-      { question: "5 + 4 = ", answer: 9 },
-      { question: "1 + 6 = ", answer: 7 },
-      { question: "7 + 2 = ", answer: 9 },
-      { question: "5 - 2 = ", answer: 3 },
-      { question: "9 - 4 = ", answer: 5 }
-    ];
-
-    const mathSection = document.getElementById('math-section');
-
-    problems.forEach((problem, index) => {
-      const div = document.createElement('div');
-      div.className = 'problem';
-      div.innerHTML = `
-        <span>${problem.question}</span>
-        <input type="number" class="input-box" id="answer-${index}">
-      `;
-      mathSection.appendChild(div);
-    });
-
-    function checkAnswers() {
-      let correct = 0;
-      problems.forEach((problem, index) => {
-        const userAnswer = document.getElementById(`answer-${index}`).value;
-        if (parseInt(userAnswer) === problem.answer) {
-          correct++;
-        }
-      });
-      document.getElementById('result').textContent = `You got ${correct} out of ${problems.length} correct!`;
-    }
+    // Dynamically generate lesson cards
+    const container = document.getElementById('lesson-container');
+    const lessons = Array.from({ length: 26 }, (_, i) => `
+      <div class="lesson-card">
+        <h3>Lesson ${i + 1}</h3>
+        <p>---</p>
+        <a href="index${i + 1}.html">Start</a>
+      </div>
+    `).join('');
+    container.innerHTML = lessons;
   </script>
 </body>
 </html>

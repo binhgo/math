@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Math for Grade 1</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      padding: 20px; 
+    }
+    .problem {
+      font-size: 20px;
+      margin: 10px 0;
+    }
+    .input-box {
+      margin: 5px;
+      font-size: 18px;
+      padding: 5px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Grade 1 Interactive Math</h1>
+    <p>Solve the problems below and check your answers!</p>
+    <div id="math-section">
+      <!-- Problems will be inserted here by JavaScript -->
+    </div>
+    <button onclick="checkAnswers()">Check Answers</button>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    const problems = [
+      { question: "2 + 3 = ", answer: 5 },
+      { question: "5 + 4 = ", answer: 9 },
+      { question: "1 + 6 = ", answer: 7 },
+      { question: "7 + 2 = ", answer: 9 },
+      { question: "5 - 2 = ", answer: 3 },
+      { question: "9 - 4 = ", answer: 5 }
+    ];
+
+    const mathSection = document.getElementById('math-section');
+
+    problems.forEach((problem, index) => {
+      const div = document.createElement('div');
+      div.className = 'problem';
+      div.innerHTML = `
+        <span>${problem.question}</span>
+        <input type="number" class="input-box" id="answer-${index}">
+      `;
+      mathSection.appendChild(div);
+    });
+
+    function checkAnswers() {
+      let correct = 0;
+      problems.forEach((problem, index) => {
+        const userAnswer = document.getElementById(`answer-${index}`).value;
+        if (parseInt(userAnswer) === problem.answer) {
+          correct++;
+        }
+      });
+      document.getElementById('result').textContent = `You got ${correct} out of ${problems.length} correct!`;
+    }
+  </script>
+</body>
+</html>
