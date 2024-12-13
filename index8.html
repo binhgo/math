@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Adventure Story</title>
+  <title>Math Adventure Story: Treasure Island Quest</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #fdf6e3;
       margin: 0;
       padding: 0;
       text-align: center;
-      overflow-x: hidden;
     }
     h1 {
       color: #ff4500;
@@ -70,50 +70,12 @@
     .next-btn:hover {
       background-color: #218838;
     }
-    .animation-container {
-      position: relative;
-      height: 200px;
-      overflow: hidden;
-    }
-    .wave {
-      position: absolute;
-      width: 200%;
-      height: 100%;
-      background: url('wave.png') repeat-x;
-      animation: wave-animation 5s linear infinite;
-    }
-    .treasure-chest {
-      width: 100px;
-      height: 100px;
-      background: url('closed-chest.png') center/cover no-repeat;
-      margin: 20px auto;
-      animation: shake 1s infinite alternate;
-    }
-    .treasure-chest.open {
-      background: url('open-chest.png') center/cover no-repeat;
-      animation: none;
-    }
-
-    @keyframes wave-animation {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-
-    @keyframes shake {
-      0% { transform: rotate(0deg); }
-      50% { transform: rotate(2deg); }
-      100% { transform: rotate(-2deg); }
-    }
   </style>
 </head>
 <body>
-  <h1>Math Adventure Story</h1>
+  <h1>Math Adventure Story: Treasure Island Quest</h1>
   <div id="story" class="story">
     Welcome to the Treasure Island! Solve the math problems to find the hidden treasure. 🏝️
-  </div>
-  <div class="animation-container">
-    <div class="wave"></div>
-    <div id="chest" class="treasure-chest"></div>
   </div>
   <div id="question" class="question">What is 5 + 3?</div>
   <div id="answers" class="answers">
@@ -124,63 +86,37 @@
   <div id="feedback" class="feedback"></div>
   <button id="next-btn" class="next-btn">Next</button>
 
-  <audio id="correct-sound" src="correct.mp3"></audio>
-  <audio id="wrong-sound" src="wrong.mp3"></audio>
-  <audio id="chest-sound" src="chest.mp3"></audio>
-
   <script>
     const story = document.getElementById('story');
     const question = document.getElementById('question');
     const answers = document.querySelectorAll('.answer');
     const feedback = document.getElementById('feedback');
     const nextBtn = document.getElementById('next-btn');
-    const chest = document.getElementById('chest');
-    const correctSound = document.getElementById('correct-sound');
-    const wrongSound = document.getElementById('wrong-sound');
-    const chestSound = document.getElementById('chest-sound');
 
     let currentStage = 0;
     const stages = [
       {
-        theme: 'beach',
         story: "You arrive at the beach. Solve a problem to unlock the map to the treasure.",
         question: "What is 5 + 3?",
         answers: [6, 8, 10],
         correct: 8,
       },
       {
-        theme: 'castle',
-        story: "You find a medieval castle. Solve a problem to unlock the gate!",
-        question: "What is 12 - 4?",
-        answers: [8, 6, 10],
-        correct: 8,
+        story: "You find a cave. Solve a problem to unlock the secret path.",
+        question: "What is 9 - 4?",
+        answers: [6, 5, 7],
+        correct: 5,
       },
       {
-        theme: 'underwater',
-        story: "You're underwater! Solve a problem to find the pearl chest!",
-        question: "What is 3 x 4?",
-        answers: [12, 9, 15],
-        correct: 12,
+        story: "You reach the treasure chest. Solve a problem to open it!",
+        question: "What is 7 x 2?",
+        answers: [12, 14, 16],
+        correct: 14,
       },
     ];
 
-    function setTheme(theme) {
-      switch (theme) {
-        case 'beach':
-          document.body.style.backgroundColor = '#87ceeb';
-          break;
-        case 'castle':
-          document.body.style.backgroundColor = '#c8c2bc';
-          break;
-        case 'underwater':
-          document.body.style.backgroundColor = '#1e90ff';
-          break;
-      }
-    }
-
     function loadStage(stageIndex) {
       const stage = stages[stageIndex];
-      setTheme(stage.theme);
       story.textContent = stage.story;
       question.textContent = stage.question;
       answers.forEach((btn, i) => {
@@ -189,7 +125,6 @@
       });
       feedback.textContent = '';
       nextBtn.style.display = 'none';
-      chest.classList.remove('open');
     }
 
     answers.forEach(answer => {
@@ -197,13 +132,9 @@
         const isCorrect = event.target.dataset.correct === "true";
         if (isCorrect) {
           feedback.innerHTML = '<span class="success">Correct! Great job!</span>';
-          correctSound.play();
-          chest.classList.add('open');
-          chestSound.play();
           nextBtn.style.display = 'inline-block';
         } else {
           feedback.innerHTML = '<span class="error">Oops! Try again.</span>';
-          wrongSound.play();
         }
       });
     });

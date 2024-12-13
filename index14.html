@@ -3,217 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Adventure Story</title>
+  <title>Interactive Dominoes Math</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #87ceeb;
-      margin: 0;
-      padding: 0;
+      background-color: #f1f1f1;
       text-align: center;
-      overflow-x: hidden;
     }
-    h1 {
-      color: #ff4500;
-      margin-top: 20px;
+    .domino {
+      width: 60px;
+      height: 120px;
+      background: #3498db;
+      border-radius: 10px;
+      display: inline-block;
+      margin: 10px;
+      text-align: center;
+      line-height: 120px;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
     }
-    .story {
-      font-size: 18px;
-      margin: 20px;
-    }
-    .question {
-      font-size: 20px;
-      font-weight: bold;
-      margin: 20px;
-    }
-    .answers {
+    .game-area {
+      margin-top: 50px;
       display: flex;
       justify-content: center;
       gap: 20px;
-      margin: 20px;
     }
-    .answer {
-      padding: 10px 20px;
-      font-size: 18px;
+    .target-number {
+      font-size: 36px;
       font-weight: bold;
-      color: #fff;
-      background-color: #007bff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .answer:hover {
-      background-color: #0056b3;
+      margin-top: 20px;
+      margin-bottom: 20px;
     }
     .feedback {
+      font-size: 24px;
       margin-top: 20px;
-      font-size: 18px;
-      font-weight: bold;
     }
-    .success {
-      color: #28a745;
+    .correct {
+      color: green;
     }
-    .error {
-      color: #dc3545;
+    .wrong {
+      color: red;
     }
-    .next-btn {
+    #score {
+      font-size: 24px;
       margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #fff;
-      background-color: #28a745;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      display: none;
     }
-    .next-btn:hover {
-      background-color: #218838;
-    }
-    .animation-container {
-      position: relative;
-      height: 200px;
-      overflow: hidden;
-    }
-    .wave {
-      position: absolute;
-      width: 200%;
-      height: 100%;
-      background: url('wave.png') repeat-x;
-      animation: wave-animation 5s linear infinite;
-    }
-    .treasure-chest {
-      width: 100px;
-      height: 100px;
-      background: url('closed-chest.png') center/cover no-repeat;
+    .drop-area {
+      width: 400px;
+      height: 150px;
       margin: 20px auto;
-      animation: shake 1s infinite alternate;
+      border: 2px dashed #3498db;
+      background-color: #ecf0f1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
     }
-    .treasure-chest.open {
-      background: url('open-chest.png') center/cover no-repeat;
-      animation: none;
+    .drop-area p {
+      font-size: 18px;
+      color: #7f8c8d;
     }
-
-    @keyframes wave-animation {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-
-    @keyframes shake {
-      0% { transform: rotate(0deg); }
-      50% { transform: rotate(2deg); }
-      100% { transform: rotate(-2deg); }
+    #countdown {
+      font-size: 30px;
+      color: #e74c3c;
+      font-weight: bold;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Math Adventure Story</h1>
-  <div id="story" class="story">
-    Welcome to the Treasure Island! Solve the math problems to find the hidden treasure. 🏝️
+
+  <h1>Interactive Dominoes Math</h1>
+  <div class="target-number" id="target-number"></div>
+
+  <div class="game-area" id="game-area">
+    <div class="domino" id="domino1" draggable="true" ondragstart="drag(event)">2</div>
+    <div class="domino" id="domino2" draggable="true" ondragstart="drag(event)">5</div>
+    <div class="domino" id="domino3" draggable="true" ondragstart="drag(event)">8</div>
+    <div class="domino" id="domino4" draggable="true" ondragstart="drag(event)">3</div>
   </div>
-  <div class="animation-container">
-    <div class="wave"></div>
-    <div id="chest" class="treasure-chest"></div>
+
+  <!-- Drop Area with clear border and background color -->
+  <div class="drop-area" id="drop-area" ondrop="drop(event)" ondragover="allowDrop(event)">
+    <p>Drop dominoes here</p>
   </div>
-  <div id="question" class="question">What is 5 + 3?</div>
-  <div id="answers" class="answers">
-    <button class="answer" data-correct="false">6</button>
-    <button class="answer" data-correct="true">8</button>
-    <button class="answer" data-correct="false">10</button>
-  </div>
-  <div id="feedback" class="feedback"></div>
-  <button id="next-btn" class="next-btn">Next</button>
+
+  <div class="feedback" id="feedback"></div>
+  <div id="score">Score: 0</div>
+
+  <!-- Countdown timer -->
+  <div id="countdown">Time: 10</div>
 
   <script>
-    const story = document.getElementById('story');
-    const question = document.getElementById('question');
-    const answers = document.querySelectorAll('.answer');
-    const feedback = document.getElementById('feedback');
-    const nextBtn = document.getElementById('next-btn');
-    const chest = document.getElementById('chest');
+    let score = 0;
+    let targetNumber = 10; // You can change the target number here
+    let selectedDominos = [];
+    let countdownTimer = 10;
+    let countdownInterval;
 
-    let currentStage = 0;
-    const stages = [
-      {
-        theme: 'beach',
-        story: "You arrive at the beach. Solve a problem to unlock the map to the treasure.",
-        question: "What is 5 + 3?",
-        answers: [6, 8, 10],
-        correct: 8,
-      },
-      {
-        theme: 'jungle',
-        story: "You find a cave in the jungle. Solve a problem to uncover the treasure!",
-        question: "What is 9 - 4?",
-        answers: [6, 5, 7],
-        correct: 5,
-      },
-      {
-        theme: 'space',
-        story: "You're in space! Solve a problem to open the treasure chest!",
-        question: "What is 7 x 2?",
-        answers: [12, 14, 16],
-        correct: 14,
-      },
-    ];
+    // Set target number
+    document.getElementById('target-number').textContent = targetNumber;
 
-    function setTheme(theme) {
-      switch (theme) {
-        case 'beach':
-          document.body.style.backgroundColor = '#87ceeb';
-          break;
-        case 'jungle':
-          document.body.style.backgroundColor = '#228b22';
-          break;
-        case 'space':
-          document.body.style.backgroundColor = '#000';
-          break;
+    // Dragging functionality
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+
+    function drag(event) {
+      event.dataTransfer.setData("text", event.target.id);
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      const data = event.dataTransfer.getData("text");
+      const draggedDomino = document.getElementById(data);
+      const dominoValue = parseInt(draggedDomino.textContent);
+
+      // Get the drop area's position
+      const dropArea = document.getElementById('drop-area');
+      const dropAreaRect = dropArea.getBoundingClientRect();
+      const offsetX = event.clientX - dropAreaRect.left;
+      const offsetY = event.clientY - dropAreaRect.top;
+
+      // Add the dragged domino to the selected list
+      selectedDominos.push(dominoValue);
+
+      // Create a clone of the dragged domino and add it to the drop area
+      const clonedDomino = draggedDomino.cloneNode(true);
+      clonedDomino.style.visibility = 'visible';
+      clonedDomino.style.position = 'absolute'; // Position the dropped domino inside the drop area
+      clonedDomino.style.left = `${offsetX - 30}px`; // Adjust position based on offset (centering the domino)
+      clonedDomino.style.top = `${offsetY - 60}px`; // Adjust position based on offset (centering the domino)
+      document.getElementById('drop-area').appendChild(clonedDomino);
+
+      draggedDomino.style.visibility = 'hidden'; // Hide the original domino after it's dropped
+
+      if (selectedDominos.length === 2) {
+        checkMatch(selectedDominos);
       }
     }
 
-    function loadStage(stageIndex) {
-      const stage = stages[stageIndex];
-      setTheme(stage.theme);
-      story.textContent = stage.story;
-      question.textContent = stage.question;
-      answers.forEach((btn, i) => {
-        btn.textContent = stage.answers[i];
-        btn.dataset.correct = stage.answers[i] === stage.correct;
-      });
-      feedback.textContent = '';
-      nextBtn.style.display = 'none';
-      chest.classList.remove('open');
-    }
+    function checkMatch(dominos) {
+      const sum = dominos[0] + dominos[1];
+      const feedbackElement = document.getElementById('feedback');
 
-    answers.forEach(answer => {
-      answer.addEventListener('click', event => {
-        const isCorrect = event.target.dataset.correct === "true";
-        if (isCorrect) {
-          feedback.innerHTML = '<span class="success">Correct! Great job!</span>';
-          nextBtn.style.display = 'inline-block';
-          chest.classList.add('open');
-        } else {
-          feedback.innerHTML = '<span class="error">Oops! Try again.</span>';
-        }
-      });
-    });
-
-    nextBtn.addEventListener('click', () => {
-      currentStage++;
-      if (currentStage < stages.length) {
-        loadStage(currentStage);
+      if (sum === targetNumber) {
+        feedbackElement.textContent = "Correct!";
+        feedbackElement.className = "feedback correct";
+        score++;
+        document.getElementById('score').textContent = "Score: " + score;
       } else {
-        story.textContent = "Congratulations! You found the treasure! 🎉🏆";
-        question.style.display = 'none';
-        answers.forEach(btn => (btn.style.display = 'none'));
-        feedback.style.display = 'none';
-        nextBtn.style.display = 'none';
+        feedbackElement.textContent = "Wrong, try again!";
+        feedbackElement.className = "feedback wrong";
+        setTimeout(resetGame, 2000); // Reset after 2 seconds
       }
-    });
 
-    // Load the first stage
-    loadStage(currentStage);
+      // Reset for next attempt after 10 seconds
+      setTimeout(resetGame, 2000);
+    }
+
+    function resetGame() {
+      // Reset selected dominos and make them visible again
+      selectedDominos = [];
+      const dominos = document.querySelectorAll('.domino');
+      dominos.forEach(domino => domino.style.visibility = 'visible');
+
+      // Clear all cloned dominoes from the drop area
+      const dropArea = document.getElementById('drop-area');
+      const droppedDominos = dropArea.querySelectorAll('.domino');
+      droppedDominos.forEach(domino => dropArea.removeChild(domino));
+
+      document.getElementById('feedback').textContent = '';
+      resetCountdown();
+    }
+
+    function resetCountdown() {
+      // Reset the countdown timer
+      countdownTimer = 10;
+      document.getElementById('countdown').textContent = `Time: ${countdownTimer}`;
+      clearInterval(countdownInterval); // Clear any previous countdown interval
+      startCountdown(); // Restart the countdown
+    }
+
+    function startCountdown() {
+      countdownInterval = setInterval(function() {
+        countdownTimer--;
+        document.getElementById('countdown').textContent = `Time: ${countdownTimer}`;
+
+        if (countdownTimer <= 0) {
+          clearInterval(countdownInterval); // Stop the countdown when it reaches 0
+          document.getElementById('feedback').textContent = 'Time is up! Try again.';
+          document.getElementById('feedback').className = 'feedback wrong';
+          setTimeout(resetGame, 2000); // Reset after 2 seconds
+        }
+      }, 1000); // Update every 1 second
+    }
+
+    // Start the countdown when the page loads
+    window.onload = resetCountdown;
   </script>
+
 </body>
 </html>

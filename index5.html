@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Instant Feedback Math</title>
+  <title>Virtual Math Shop</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #f0f8ff;
+      background-color: #f9f9f9;
       margin: 0;
       padding: 0;
     }
@@ -16,136 +16,200 @@
       color: #ff4500;
       margin-top: 20px;
     }
-    .container {
-      margin: 20px auto;
-      max-width: 800px;
-      text-align: center;
-    }
-    .problem-zone, .answer-zone {
+    .shop-container {
       display: flex;
       justify-content: center;
-      margin: 20px 0;
       flex-wrap: wrap;
+      margin: 20px auto;
+      max-width: 800px;
     }
-    .problem, .answer {
-      background-color: #e6f7ff;
-      border: 2px dashed #007bff;
-      border-radius: 8px;
-      padding: 15px;
+    .item {
+      width: 200px;
       margin: 10px;
-      width: 120px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
       text-align: center;
-      font-size: 18px;
-      cursor: grab;
-    }
-    .answer {
-      background-color: #f9f9f9;
-      border-color: #aaa;
-    }
-    .problem:hover {
-      background-color: #d1ecf1;
-    }
-    .drop-zone {
-      border: 2px dashed #ff4500;
-      background-color: #ffe4b5;
-      width: 120px;
-      height: 60px;
-      border-radius: 8px;
-      margin: 10px;
+      padding: 10px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       position: relative;
     }
-    .correct {
-      background-color: #28a745 !important;
-      color: white;
-      animation: bounce 0.5s ease;
+    .item img {
+      max-width: 100px;
+      margin-bottom: 10px;
     }
-    .wrong {
-      background-color: #dc3545 !important;
-      color: white;
-      animation: shake 0.5s ease;
+    .item .price {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 10px 0;
     }
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
+    .item button {
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
     }
-    @keyframes shake {
-      0%, 100% {
-        transform: translateX(0);
-      }
-      25% {
-        transform: translateX(-5px);
-      }
-      75% {
-        transform: translateX(5px);
-      }
+    .item button:hover {
+      background-color: #0056b3;
+    }
+    .wallet {
+      margin: 10px;
+      font-size: 20px;
+      color: #28a745;
+    }
+    .level, .score, .timer {
+      margin: 10px;
+      font-size: 18px;
+      color: #ff4500;
+    }
+    .bonus-item {
+      margin: 20px auto;
+      border: 3px dashed #ffd700;
+      background-color: #fff9e6;
+      padding: 20px;
+      width: 200px;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Instant Feedback Math</h1>
-    <p>Drag the correct answer to each math problem and see instant feedback!</p>
-    <div class="problem-zone">
-      <div class="problem" draggable="true" id="problem-5">2 + 3</div>
-      <div class="problem" draggable="true" id="problem-6">4 + 2</div>
-      <div class="problem" draggable="true" id="problem-4">6 - 2</div>
+  <h1>Virtual Math Shop</h1>
+  <p>Solve math problems to buy items and earn bonus rewards!</p>
+  <div class="wallet">Your Wallet: <span id="wallet">20</span> Coins</div>
+  <div class="level">Current Level: <span id="level">1</span></div>
+  <div class="score">Score: <span id="score">0</span></div>
+  <div class="timer">Time Left: <span id="timer">30</span> seconds</div>
+  <div class="bonus-item" id="bonus-item" style="display:none;">
+    <strong>Bonus Reward!</strong>
+    <p>Answer this question to earn 10 coins:</p>
+    <div id="bonus-question"></div>
+    <button onclick="answerBonus()">Submit</button>
+  </div>
+  <div class="shop-container">
+    <div class="item">
+      <img src="https://cdn-icons-png.flaticon.com/512/809/809952.png" alt="Apple">
+      <div class="price">5 Coins</div>
+      <button onclick="buyItem(this, 5)">Buy</button>
     </div>
-    <div class="answer-zone">
-      <div class="drop-zone" data-answer="5"></div>
-      <div class="drop-zone" data-answer="6"></div>
-      <div class="drop-zone" data-answer="4"></div>
+    <div class="item">
+      <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Toy">
+      <div class="price">10 Coins</div>
+      <button onclick="buyItem(this, 10)">Buy</button>
     </div>
-    <div class="problem-zone">
-      <div class="answer" draggable="true" id="answer-5">5</div>
-      <div class="answer" draggable="true" id="answer-6">6</div>
-      <div class="answer" draggable="true" id="answer-4">4</div>
+    <div class="item">
+      <img src="https://cdn-icons-png.flaticon.com/512/2909/2909594.png" alt="Book">
+      <div class="price">15 Coins</div>
+      <button onclick="buyItem(this, 15)">Buy</button>
     </div>
   </div>
 
   <script>
-    let draggedItem = null;
+    let walletBalance = 20;
+    let currentLevel = 1;
+    let correctAnswers = 0;
+    let score = 0;
+    let timer = 30;
+    let bonusAnswer;
 
-    // Sound effects
-    const correctSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_d83b09c05e.mp3?filename=correct-answer-ding.mp3');
-    const wrongSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_401b3d3cb6.mp3?filename=wrong-answer-buzz.mp3');
+    function updateUI() {
+      document.getElementById("wallet").textContent = walletBalance;
+      document.getElementById("score").textContent = score;
+      document.getElementById("level").textContent = currentLevel;
+      document.getElementById("timer").textContent = timer;
+    }
 
-    // Add drag-and-drop functionality
-    document.querySelectorAll('.problem, .answer').forEach(item => {
-      item.addEventListener('dragstart', function () {
-        draggedItem = item;
-      });
+    function startTimer() {
+      const interval = setInterval(() => {
+        timer--;
+        updateUI();
 
-      item.addEventListener('dragend', function () {
-        draggedItem = null;
-      });
-    });
-
-    document.querySelectorAll('.drop-zone').forEach(zone => {
-      zone.addEventListener('dragover', function (e) {
-        e.preventDefault();
-      });
-
-      zone.addEventListener('drop', function () {
-        if (!this.hasChildNodes()) {
-          const answer = this.getAttribute('data-answer');
-          const value = draggedItem.textContent;
-
-          if (value === answer) {
-            correctSound.play();
-            this.appendChild(draggedItem);
-            draggedItem.classList.add('correct');
-          } else {
-            wrongSound.play();
-            draggedItem.classList.add('wrong');
-            setTimeout(() => draggedItem.classList.remove('wrong'), 500);
-          }
+        if (timer <= 0) {
+          clearInterval(interval);
+          alert("Time's up! Restarting...");
+          location.reload();
         }
-      });
-    });
+      }, 1000);
+    }
+
+    function buyItem(button, price) {
+      if (walletBalance >= price) {
+        const problem = generateMathProblem(currentLevel, price);
+        const userAnswer = prompt(`Solve this problem to buy the item: ${problem.question}`);
+        if (parseInt(userAnswer) === problem.answer) {
+          walletBalance -= price;
+          score += 10; // Earn 10 points for a correct purchase
+          button.textContent = "Bought!";
+          button.disabled = true;
+          button.style.backgroundColor = "#28a745";
+          correctAnswers++;
+          updateUI();
+
+          // Level up every 3 correct answers
+          if (correctAnswers % 3 === 0) {
+            currentLevel++;
+            alert(`Congratulations! You've reached Level ${currentLevel}.`);
+          }
+
+          // Trigger bonus item every 2 purchases
+          if (correctAnswers % 2 === 0) {
+            generateBonusItem();
+          }
+        } else {
+          alert("Wrong answer. Try again!");
+        }
+      } else {
+        alert("Not enough coins to buy this item!");
+      }
+    }
+
+    function generateMathProblem(level, price) {
+      let a, b, question, answer;
+
+      if (level === 1) {
+        a = Math.floor(Math.random() * 10) + 1;
+        b = price - a;
+        question = `${a} + ${b}`;
+        answer = price;
+      } else if (level === 2) {
+        a = Math.floor(Math.random() * 20) + 1;
+        b = Math.floor(Math.random() * 10) + 1;
+        question = `${a} - ${b}`;
+        answer = a - b;
+      } else {
+        a = Math.floor(Math.random() * 10) + 1;
+        b = Math.floor(Math.random() * 10) + 1;
+        question = `${a} × ${b}`;
+        answer = a * b;
+      }
+
+      return { question, answer };
+    }
+
+    function generateBonusItem() {
+      document.getElementById("bonus-item").style.display = "block";
+      const a = Math.floor(Math.random() * 10) + 1;
+      const b = Math.floor(Math.random() * 10) + 1;
+      bonusAnswer = a + b;
+      document.getElementById("bonus-question").textContent = `${a} + ${b}`;
+    }
+
+    function answerBonus() {
+      const userAnswer = prompt("Answer the bonus question:");
+      if (parseInt(userAnswer) === bonusAnswer) {
+        walletBalance += 10;
+        alert("Correct! You earned 10 bonus coins.");
+        document.getElementById("bonus-item").style.display = "none";
+        updateUI();
+      } else {
+        alert("Wrong answer. Try again next time!");
+      }
+    }
+
+    // Start the timer when the page loads
+    startTimer();
+    updateUI();
   </script>
 </body>
 </html>
