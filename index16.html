@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Number Line Jump</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background: #87ceeb; /* Sky blue for default theme */
+    }
+    h1 {
+      margin: 20px 0;
+      color: #333;
+    }
+    .number-line-container {
+      position: relative;
+      width: 80%;
+      margin: 30px auto;
+      height: 100px;
+      background: #f0f0f0;
+      border: 2px solid #333;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .number {
+      position: relative;
+      width: 10%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .character {
+      position: absolute;
+      top: -50px;
+      left: 0;
+      width: 50px;
+      height: 50px;
+      background: url('frog.png') no-repeat center/contain; /* Frog theme */
+      transition: left 0.5s ease, transform 0.2s;
+    }
+    .question {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 20px;
+    }
+    .score {
+      margin: 10px;
+      font-size: 18px;
+    }
+    .feedback {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .success {
+      color: #28a745;
+    }
+    .error {
+      color: #dc3545;
+    }
+    .next-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .next-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Number Line Jump</h1>
+  <div class="question">Move the frog to: <span id="target-number"></span></div>
+  <div class="number-line-container" id="number-line">
+    <div id="character" class="character"></div>
+    <!-- Numbers will be dynamically added here -->
+  </div>
+  <div class="score">Score: <span id="score">0</span></div>
+  <div id="feedback" class="feedback"></div>
+  <button id="next-btn" class="next-btn" style="display: none;">Next</button>
+
+  <script>
+    const numberLine = document.getElementById('number-line');
+    const character = document.getElementById('character');
+    const targetNumberEl = document.getElementById('target-number');
+    const scoreEl = document.getElementById('score');
+    const feedbackEl = document.getElementById('feedback');
+    const nextBtn = document.getElementById('next-btn');
+
+    let score = 0;
+    let targetNumber = 0;
+    let currentStage = 1;
+
+    function generateNumberLine() {
+      numberLine.innerHTML = ''; // Clear the number line
+      numberLine.appendChild(character); // Reattach the character
+
+      for (let i = 0; i < 10; i++) {
+        const numberDiv = document.createElement('div');
+        numberDiv.classList.add('number');
+        numberDiv.textContent = i;
+
+        // Click handler for each number
+        numberDiv.addEventListener('click', () => moveCharacter(i));
+        numberLine.appendChild(numberDiv);
+      }
+    }
+
+    function moveCharacter(number) {
+      const positions = numberLine.children;
+      const position = positions[number].offsetLeft;
+
+      character.style.left = `${position}px`;
+
+      // Check if it's correct
+      if (number === targetNumber) {
+        feedbackEl.innerHTML = '<span class="success">Correct! Great job!</span>';
+        score++;
+        scoreEl.textContent = score;
+        nextBtn.style.display = 'inline-block';
+      } else {
+        feedbackEl.innerHTML = '<span class="error">Oops! Try again.</span>';
+      }
+    }
+
+    function nextStage() {
+      currentStage++;
+      feedbackEl.textContent = '';
+      nextBtn.style.display = 'none';
+
+      // Generate new target
+      targetNumber = Math.floor(Math.random() * 10);
+      targetNumberEl.textContent = targetNumber;
+    }
+
+    // Initialize game
+    function initGame() {
+      generateNumberLine();
+      nextStage();
+    }
+
+    nextBtn.addEventListener('click', nextStage);
+
+    initGame();
+  </script>
+</body>
+</html>

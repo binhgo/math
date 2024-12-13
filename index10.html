@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Math Shop</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      color: #ff4500;
+      margin-top: 20px;
+    }
+    .shop-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 20px auto;
+      max-width: 800px;
+    }
+    .item {
+      width: 200px;
+      margin: 10px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      text-align: center;
+      padding: 10px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    .item img {
+      max-width: 100px;
+      margin-bottom: 10px;
+    }
+    .item .price {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .item button {
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .item button:hover {
+      background-color: #0056b3;
+    }
+    .wallet {
+      margin: 10px;
+      font-size: 20px;
+      color: #28a745;
+    }
+    .level, .score, .timer {
+      margin: 10px;
+      font-size: 18px;
+      color: #ff4500;
+    }
+    .bonus-item {
+      margin: 20px auto;
+      border: 3px dashed #ffd700;
+      background-color: #fff9e6;
+      padding: 20px;
+      width: 200px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Virtual Math Shop</h1>
+  <p>Solve math problems to buy items and earn bonus rewards!</p>
+  <div class="wallet">Your Wallet: <span id="wallet">20</span> Coins</div>
+  <div class="level">Current Level: <span id="level">1</span></div>
+  <div class="score">Score: <span id="score">0</span></div>
+  <div class="timer">Time Left: <span id="timer">30</span> seconds</div>
+  <div class="bonus-item" id="bonus-item" style="display:none;">
+    <strong>Bonus Reward!</strong>
+    <p>Answer this question to earn 10 coins:</p>
+    <div id="bonus-question"></div>
+    <button onclick="answerBonus()">Submit</button>
+  </div>
+  <div class="shop-container">
+    <div class="item">
+      <img src="https://cdn-icons-png.flaticon.com/512/809/809952.png" alt="Apple">
+      <div class="price">5 Coins</div>
+      <button onclick="buyItem(this, 5)">Buy</button>
+    </div>
+    <div class="item">
+      <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Toy">
+      <div class="price">10 Coins</div>
+      <button onclick="buyItem(this, 10)">Buy</button>
+    </div>
+    <div class="item">
+      <img src="https://cdn-icons-png.flaticon.com/512/2909/2909594.png" alt="Book">
+      <div class="price">15 Coins</div>
+      <button onclick="buyItem(this, 15)">Buy</button>
+    </div>
+  </div>
+
+  <script>
+    let walletBalance = 20;
+    let currentLevel = 1;
+    let correctAnswers = 0;
+    let score = 0;
+    let timer = 30;
+    let bonusAnswer;
+
+    function updateUI() {
+      document.getElementById("wallet").textContent = walletBalance;
+      document.getElementById("score").textContent = score;
+      document.getElementById("level").textContent = currentLevel;
+      document.getElementById("timer").textContent = timer;
+    }
+
+    function startTimer() {
+      const interval = setInterval(() => {
+        timer--;
+        updateUI();
+
+        if (timer <= 0) {
+          clearInterval(interval);
+          alert("Time's up! Restarting...");
+          location.reload();
+        }
+      }, 1000);
+    }
+
+    function buyItem(button, price) {
+      if (walletBalance >= price) {
+        const problem = generateMathProblem(currentLevel, price);
+        const userAnswer = prompt(`Solve this problem to buy the item: ${problem.question}`);
+        if (parseInt(userAnswer) === problem.answer) {
+          walletBalance -= price;
+          score += 10; // Earn 10 points for a correct purchase
+          button.textContent = "Bought!";
+          button.disabled = true;
+          button.style.backgroundColor = "#28a745";
+          correctAnswers++;
+          updateUI();
+
+          // Level up every 3 correct answers
+          if (correctAnswers % 3 === 0) {
+            currentLevel++;
+            alert(`Congratulations! You've reached Level ${currentLevel}.`);
+          }
+
+          // Trigger bonus item every 2 purchases
+          if (correctAnswers % 2 === 0) {
+            generateBonusItem();
+          }
+        } else {
+          alert("Wrong answer. Try again!");
+        }
+      } else {
+        alert("Not enough coins to buy this item!");
+      }
+    }
+
+    function generateMathProblem(level, price) {
+      let a, b, question, answer;
+
+      if (level === 1) {
+        a = Math.floor(Math.random() * 10) + 1;
+        b = price - a;
+        question = `${a} + ${b}`;
+        answer = price;
+      } else if (level === 2) {
+        a = Math.floor(Math.random() * 20) + 1;
+        b = Math.floor(Math.random() * 10) + 1;
+        question = `${a} - ${b}`;
+        answer = a - b;
+      } else {
+        a = Math.floor(Math.random() * 10) + 1;
+        b = Math.floor(Math.random() * 10) + 1;
+        question = `${a} × ${b}`;
+        answer = a * b;
+      }
+
+      return { question, answer };
+    }
+
+    function generateBonusItem() {
+      document.getElementById("bonus-item").style.display = "block";
+      const a = Math.floor(Math.random() * 10) + 1;
+      const b = Math.floor(Math.random() * 10) + 1;
+      bonusAnswer = a + b;
+      document.getElementById("bonus-question").textContent = `${a} + ${b}`;
+    }
+
+    function answerBonus() {
+      const userAnswer = prompt("Answer the bonus question:");
+      if (parseInt(userAnswer) === bonusAnswer) {
+        walletBalance += 10;
+        alert("Correct! You earned 10 bonus coins.");
+        document.getElementById("bonus-item").style.display = "none";
+        updateUI();
+      } else {
+        alert("Wrong answer. Try again next time!");
+      }
+    }
+
+    // Start the timer when the page loads
+    startTimer();
+    updateUI();
+  </script>
+</body>
+</html>

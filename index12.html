@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shape Sorter Math Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      color: #ff4500;
+      margin-top: 20px;
+    }
+    .game-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .shape {
+      width: 80px;
+      height: 80px;
+      margin: 20px;
+      text-align: center;
+      line-height: 80px;
+      border: 2px solid #555;
+      border-radius: 50%;
+      background-color: #87cefa;
+      cursor: grab;
+      user-select: none;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+    }
+    .target {
+      width: 100px;
+      height: 100px;
+      margin: 20px;
+      border: 2px dashed #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #333;
+    }
+    .feedback {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .success {
+      color: #28a745;
+    }
+    .error {
+      color: #dc3545;
+    }
+    .scoreboard {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
+    .leaderboard {
+      margin-top: 20px;
+      text-align: left;
+      display: inline-block;
+    }
+    .leaderboard h2 {
+      color: #ff4500;
+    }
+    .leaderboard ol {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Shape Sorter Math Game</h1>
+  <p>Drag the shapes to the correct answers! Level up as you score points.</p>
+  <div class="scoreboard">
+    <div>Score: <span id="score">0</span></div>
+    <div>Level: <span id="level">1</span></div>
+  </div>
+  <div id="problem">Solve: 5 + 3</div>
+  <div class="game-container">
+    <div class="shape" draggable="true" data-answer="8">Circle</div>
+    <div class="shape" draggable="true" data-answer="10">Square</div>
+    <div class="shape" draggable="true" data-answer="6">Triangle</div>
+  </div>
+  <div class="game-container">
+    <div class="target" data-correct="8">8</div>
+    <div class="target" data-correct="10">10</div>
+    <div class="target" data-correct="6">6</div>
+  </div>
+  <div id="feedback" class="feedback"></div>
+  <div class="leaderboard">
+    <h2>Leaderboard</h2>
+    <ol id="leaderboard-list"></ol>
+  </div>
+
+  <script>
+    const shapes = document.querySelectorAll('.shape');
+    const targets = document.querySelectorAll('.target');
+    const feedback = document.getElementById('feedback');
+    const problem = document.getElementById('problem');
+    const scoreDisplay = document.getElementById('score');
+    const levelDisplay = document.getElementById('level');
+    const leaderboardList = document.getElementById('leaderboard-list');
+
+    let currentProblem = generateProblem();
+    let score = 0;
+    let level = 1;
+
+    const leaderboard = [
+      { name: "Alice", score: 50 },
+      { name: "Bob", score: 40 },
+      { name: "Charlie", score: 30 },
+    ];
+
+    updateProblem();
+    updateLeaderboard();
+
+    // Drag events
+    shapes.forEach(shape => {
+      shape.addEventListener('dragstart', dragStart);
+    });
+
+    targets.forEach(target => {
+      target.addEventListener('dragover', dragOver);
+      target.addEventListener('drop', drop);
+    });
+
+    function dragStart(event) {
+      event.dataTransfer.setData('text', event.target.dataset.answer);
+    }
+
+    function dragOver(event) {
+      event.preventDefault();
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      const answer = event.dataTransfer.getData('text');
+      const correctAnswer = event.target.dataset.correct;
+
+      if (answer === correctAnswer) {
+        score += 10; // Increase score for correct answer
+        feedback.innerHTML = '<span class="success">Correct! Great job!</span>';
+        if (score % 30 === 0) {
+          levelUp();
+        }
+        resetGame();
+      } else {
+        feedback.innerHTML = '<span class="error">Oops! Try again!</span>';
+      }
+      updateScoreboard();
+    }
+
+    function generateProblem() {
+      const a = Math.floor(Math.random() * 10) + 1;
+      const b = Math.floor(Math.random() * 10) + 1;
+      const operator = Math.random() > 0.5 ? '+' : '-';
+      const answer = operator === '+' ? a + b : a - b;
+
+      return { question: `${a} ${operator} ${b}`, answer };
+    }
+
+    function updateProblem() {
+      problem.textContent = `Solve: ${currentProblem.question}`;
+
+      const answers = [
+        currentProblem.answer,
+        currentProblem.answer + 2,
+        currentProblem.answer - 2
+      ].sort(() => Math.random() - 0.5);
+
+      shapes.forEach((shape, index) => {
+        shape.textContent = answers[index];
+        shape.dataset.answer = answers[index];
+      });
+
+      targets.forEach((target, index) => {
+        target.dataset.correct = answers[index];
+      });
+    }
+
+    function resetGame() {
+      currentProblem = generateProblem();
+      updateProblem();
+      feedback.innerHTML = '';
+    }
+
+    function updateScoreboard() {
+      scoreDisplay.textContent = score;
+      levelDisplay.textContent = level;
+    }
+
+    function levelUp() {
+      level++;
+      alert(`Level up! Welcome to Level ${level}.`);
+    }
+
+    function updateLeaderboard() {
+      leaderboardList.innerHTML = '';
+      leaderboard.sort((a, b) => b.score - a.score);
+      leaderboard.forEach(entry => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${entry.name}: ${entry.score} points`;
+        leaderboardList.appendChild(listItem);
+      });
+    }
+  </script>
+</body>
+</html>

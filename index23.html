@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Teller Math</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f7f1e3;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .clock-container {
+      margin: 50px auto;
+      width: 300px;
+      height: 300px;
+      position: relative;
+      background: #ecf0f1;
+      border: 5px solid #34495e;
+      border-radius: 50%;
+    }
+    .number {
+      position: absolute;
+      font-size: 20px;
+      color: #2c3e50;
+      transform: translate(-50%, -50%);
+    }
+    .hand {
+      position: absolute;
+      width: 6px;
+      background: #e74c3c;
+      border-radius: 3px;
+      transform-origin: bottom center;
+      transform: rotate(0deg);
+      z-index: 10;
+    }
+    .hour-hand {
+      height: 60px;
+      top: 90px;
+      left: 147px;
+    }
+    .minute-hand {
+      height: 90px;
+      top: 60px;
+      left: 147px;
+      background: #3498db;
+    }
+    .center-point {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #2c3e50;
+      border-radius: 50%;
+      top: 144px;
+      left: 144px;
+      z-index: 15;
+    }
+    .time-prompt {
+      margin: 20px 0;
+      font-size: 24px;
+    }
+    .feedback {
+      font-size: 18px;
+      margin-top: 10px;
+      display: none;
+    }
+    .feedback.correct {
+      color: #27ae60;
+    }
+    .feedback.wrong {
+      color: #e74c3c;
+    }
+    .score {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #27ae60;
+    }
+  </style>
+</head>
+<body>
+  <h1>Time Teller Math</h1>
+  <p class="time-prompt" id="time-prompt">Set the time to: 8:00</p>
+  <div class="clock-container" id="clock-container">
+    <div class="number" style="top: 15px; left: 150px;">12</div>
+    <div class="number" style="top: 45px; left: 230px;">1</div>
+    <div class="number" style="top: 95px; left: 275px;">2</div>
+    <div class="number" style="top: 150px; left: 290px;">3</div>
+    <div class="number" style="top: 205px; left: 275px;">4</div>
+    <div class="number" style="top: 255px; left: 230px;">5</div>
+    <div class="number" style="top: 285px; left: 150px;">6</div>
+    <div class="number" style="top: 255px; left: 70px;">7</div>
+    <div class="number" style="top: 205px; left: 25px;">8</div>
+    <div class="number" style="top: 150px; left: 10px;">9</div>
+    <div class="number" style="top: 95px; left: 25px;">10</div>
+    <div class="number" style="top: 45px; left: 70px;">11</div>
+    <div class="hand hour-hand" id="hour-hand"></div>
+    <div class="hand minute-hand" id="minute-hand"></div>
+    <div class="center-point"></div>
+  </div>
+  <button id="check-time">Check Time</button>
+  <div class="feedback" id="feedback"></div>
+  <div class="score">Score: <span id="score">0</span></div>
+
+  <script>
+    const hourHand = document.getElementById("hour-hand");
+    const minuteHand = document.getElementById("minute-hand");
+    const feedback = document.getElementById("feedback");
+    const timePrompt = document.getElementById("time-prompt");
+    const scoreElement = document.getElementById("score");
+    const checkTimeButton = document.getElementById("check-time");
+
+    let currentHour = 8;
+    let currentMinute = 0;
+    let score = 0;
+
+    let isDragging = false;
+    let draggedHand = null;
+
+    // Initial rotation
+    let hourRotation = currentHour * 30;
+    let minuteRotation = currentMinute * 6;
+
+    updateClock();
+
+    // Event listeners for dragging
+    hourHand.addEventListener("mousedown", (e) => startDrag(e, "hour"));
+    minuteHand.addEventListener("mousedown", (e) => startDrag(e, "minute"));
+    document.addEventListener("mousemove", dragHand);
+    document.addEventListener("mouseup", endDrag);
+
+    function startDrag(e, handType) {
+      isDragging = true;
+      draggedHand = handType;
+    }
+
+    function dragHand(e) {
+      if (!isDragging || !draggedHand) return;
+
+      const clockRect = document
+        .querySelector(".clock-container")
+        .getBoundingClientRect();
+      const centerX = clockRect.left + clockRect.width / 2;
+      const centerY = clockRect.top + clockRect.height / 2;
+
+      const angle =
+        Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI) +
+        90;
+
+      if (draggedHand === "hour") {
+        hourRotation = Math.round(angle / 30) * 30; // Snap to hour positions
+      } else if (draggedHand === "minute") {
+        minuteRotation = Math.round(angle / 6) * 6; // Snap to minute positions
+      }
+
+      updateClock();
+    }
+
+    function endDrag() {
+      isDragging = false;
+      draggedHand = null;
+    }
+
+    function updateClock() {
+      hourHand.style.transform = `rotate(${hourRotation}deg)`;
+      minuteHand.style.transform = `rotate(${minuteRotation}deg)`;
+    }
+
+    function checkTime() {
+      const correctHour = (hourRotation / 30) % 12;
+      const correctMinute = (minuteRotation / 6) % 60;
+
+      if (correctHour === currentHour && correctMinute === currentMinute) {
+        feedback.textContent = "Correct!";
+        feedback.className = "feedback correct";
+        score++;
+        scoreElement.textContent = score;
+        nextLevel();
+      } else {
+        feedback.textContent = "Wrong! Try Again.";
+        feedback.className = "feedback wrong";
+      }
+
+      feedback.style.display = "block";
+      setTimeout(() => (feedback.style.display = "none"), 2000);
+    }
+
+    function nextLevel() {
+      currentHour = Math.floor(Math.random() * 12);
+      currentMinute = Math.floor(Math.random() * 12) * 5;
+      timePrompt.textContent = `Set the time to: ${currentHour}:${currentMinute
+        .toString()
+        .padStart(2, "0")}`;
+    }
+
+    checkTimeButton.addEventListener("click", checkTime);
+  </script>
+</body>
+</html>
